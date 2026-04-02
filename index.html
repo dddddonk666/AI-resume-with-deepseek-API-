@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 简历生成器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+JP:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="noise"></div>
+
+<div class="shell">
+
+  <!-- ── HEADER ── -->
+  <header class="hdr">
+    <div class="hdr-eyebrow">RESUME.GEN <span class="dim">// v2.0</span></div>
+    <h1>AI <em>简历</em><br>生成器</h1>
+    <p class="hdr-sub">输入原始成果 &rarr; DeepSeek AI 润色 &rarr; 预览 &rarr; 导出 PDF</p>
+    <div class="hdr-line"></div>
+  </header>
+
+  <!-- ── TRACK ── -->
+  <div class="track">
+
+    <!-- ① 基本信息 -->
+    <section class="panel" id="p1">
+      <div class="panel-head">
+        <span class="node">01</span>
+        <span class="panel-title">个人信息</span>
+      </div>
+      <div class="grid3">
+        <div class="fg"><label>姓名</label><input id="name" type="text" placeholder="张三"></div>
+        <div class="fg"><label>电话</label><input id="phone" type="text" placeholder="138-0000-0000"></div>
+        <div class="fg"><label>邮箱</label><input id="email" type="text" placeholder="me@mail.com"></div>
+        <div class="fg"><label>学校</label><input id="school" type="text" placeholder="武汉大学"></div>
+        <div class="fg"><label>专业</label><input id="major" type="text" placeholder="计算机科学与技术"></div>
+        <div class="fg"><label>就读时间</label><input id="edu-time" type="text" placeholder="2021 — 2025"></div>
+      </div>
+    </section>
+
+    <div class="rail-segment"></div>
+
+    <!-- ② 原始内容 + AI -->
+    <section class="panel" id="p2">
+      <div class="panel-head">
+        <span class="node">02</span>
+        <span class="panel-title">成果原始内容</span>
+        <span class="ai-badge">DeepSeek AI</span>
+      </div>
+      <p class="tip">用自己的话描述即可，AI 会润色为规范的简历语言。</p>
+
+      <div class="fg">
+        <label>个人简介 / 自我评价</label>
+        <textarea id="raw-summary" rows="3" placeholder="例：我擅长前端开发，熟悉 React，参与过多个团队项目…"></textarea>
+      </div>
+
+      <div class="grid2" style="margin-top:14px">
+        <div class="fg">
+          <label>项目经历一</label>
+          <textarea id="raw-proj1" rows="3" placeholder="例：做了AI简历网站，用HTML+JS，接了API，能生成PDF…"></textarea>
+          <input id="proj1-time" type="text" placeholder="时间段，如 2025.03 — 2025.06" class="mt8">
+        </div>
+        <div class="fg">
+          <label>项目经历二</label>
+          <textarea id="raw-proj2" rows="3" placeholder="例：做了个人博客，支持 Markdown 渲染和文章管理…"></textarea>
+          <input id="proj2-time" type="text" placeholder="时间段，如 2024.09 — 2024.12" class="mt8">
+        </div>
+      </div>
+
+      <div class="fg" style="margin-top:14px">
+        <label>技能列表</label>
+        <textarea id="raw-skills" rows="2" placeholder="例：会HTML/CSS/JS，用过Git，Python基础，算法一般…"></textarea>
+      </div>
+
+      <div class="grid3" style="margin-top:14px">
+        <div class="fg">
+          <label>DeepSeek API Key</label>
+          <input id="api-key" type="password" placeholder="sk-...">
+        </div>
+        <div class="fg">
+          <label>Base URL</label>
+          <input id="api-base-url" type="text" placeholder="https://api.deepseek.com">
+        </div>
+        <div class="fg">
+          <label>Model</label>
+          <input id="api-model" type="text" placeholder="deepseek-chat">
+        </div>
+      </div>
+      <p class="tip" style="margin-top:10px">
+        API Key 仅保存在当前浏览器的本地存储中。这个项目是纯前端页面，若要更安全地使用，建议再加一层你自己的后端代理。
+      </p>
+
+      <div class="row-actions">
+        <button class="btn-ai" id="btn-ai" onclick="aiSummarize()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          AI 智能总结
+        </button>
+        <span id="ai-status" class="status-msg"></span>
+      </div>
+    </section>
+
+    <div class="rail-segment"></div>
+
+    <!-- ③ 预览编辑 -->
+    <section class="panel" id="p3" style="display:none">
+      <div class="panel-head">
+        <span class="node">03</span>
+        <span class="panel-title">总结结果 <span class="dim">/ 可手动修改</span></span>
+      </div>
+
+      <div class="fg">
+        <label>个人简介</label>
+        <textarea id="summary" rows="3"></textarea>
+      </div>
+      <div class="grid2" style="margin-top:14px">
+        <div class="fg">
+          <label>项目一标题</label>
+          <input id="project1_title" type="text">
+        </div>
+        <div class="fg">
+          <label>项目二标题</label>
+          <input id="project2_title" type="text">
+        </div>
+        <div class="fg">
+          <label>项目一描述</label>
+          <textarea id="project1_desc" rows="3"></textarea>
+        </div>
+        <div class="fg">
+          <label>项目二描述</label>
+          <textarea id="project2_desc" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:14px">
+        <div class="fg"><label>技能一</label><input id="skill1" type="text"></div>
+        <div class="fg"><label>技能二</label><input id="skill2" type="text"></div>
+        <div class="fg"><label>技能三</label><input id="skill3" type="text"></div>
+      </div>
+    </section>
+
+    <div class="rail-segment" id="rail3" style="display:none"></div>
+
+    <!-- ④ 操作区 -->
+    <section class="panel panel-actions" id="p4">
+      <div class="panel-head">
+        <span class="node">04</span>
+        <span class="panel-title">导出</span>
+      </div>
+      <div class="export-btns">
+        <button class="btn-preview" onclick="renderPreview()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/></svg>
+          预览简历
+        </button>
+        <button class="btn-pdf" id="btn-pdf" onclick="exportPDF()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          导出 PDF
+        </button>
+        <button class="btn-latex" onclick="toggleLatex()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          LaTeX 源码
+        </button>
+      </div>
+      <span id="pdf-status" class="status-msg" style="margin-top:10px;display:block"></span>
+    </section>
+
+  </div><!-- /track -->
+
+  <!-- ── 简历预览 ── -->
+  <div id="resume-wrap" style="display:none">
+    <div class="preview-shell">
+      <div class="preview-topbar">
+        <div class="preview-dots"><span></span><span></span><span></span></div>
+        <span class="preview-label">RESUME PREVIEW</span>
+      </div>
+      <div id="resume-render"></div>
+    </div>
+  </div>
+
+  <!-- ── LaTeX 源码 ── -->
+  <div id="latex-wrap" style="display:none">
+    <div class="code-shell">
+      <div class="code-topbar">
+        <span class="code-label">resume.tex</span>
+        <button class="btn-copy" onclick="copyLatex()">复制</button>
+      </div>
+      <pre><code id="latex-out"></code></pre>
+      <p class="code-hint">粘贴至 <a href="https://www.overleaf.com" target="_blank">Overleaf</a> 即可编译。</p>
+    </div>
+  </div>
+
+</div><!-- /shell -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
